@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const virtues = [
   ["๐๑", "มีคุณธรรม จริยธรรม", "ยึดมั่นในหลักธรรม มีความกตัญญู และร่วมกิจกรรมทางพระพุทธศาสนาอย่างสม่ำเสมอ", "image24.jpeg"],
@@ -64,7 +64,16 @@ export default function Home() {
   const mainRef = useRef<HTMLElement>(null);
   const current = useMemo(() => virtues[virtue], [virtue]);
   const filteredGallery = useMemo(() => galleryFilter === "all" ? gallery : gallery.filter(image => image.category === galleryFilter), [galleryFilter]);
+  const filteredGalleryIndexes = useMemo(() => filteredGallery.map(image => gallery.indexOf(image)), [filteredGallery]);
   const lightboxOpen = lightbox !== null;
+  const navigateLightbox = useCallback((direction: number) => {
+    setLightbox(index => {
+      if (index === null || filteredGalleryIndexes.length === 0) return index;
+      const position = filteredGalleryIndexes.indexOf(index);
+      const nextPosition = (Math.max(position, 0) + direction + filteredGalleryIndexes.length) % filteredGalleryIndexes.length;
+      return filteredGalleryIndexes[nextPosition];
+    });
+  }, [filteredGalleryIndexes]);
 
   useEffect(() => {
     const reveal = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && e.target.classList.add("is-visible")), { threshold: .12 });
@@ -73,12 +82,12 @@ export default function Home() {
       setShowTop(window.scrollY > 650);
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       setScrollProgress(maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0);
-      const sections = ["top", "story", "awards", "virtues", "gallery"];
+      const sections = ["top", "story", "awards", "virtues", "feature", "gallery"];
       const currentSection = [...sections].reverse().find(id => {
         const element = document.getElementById(id);
         return element ? window.scrollY + window.innerHeight * .32 >= element.offsetTop : false;
       });
-      if (currentSection) setActiveSection(currentSection);
+      if (currentSection) setActiveSection(currentSection === "feature" ? "virtues" : currentSection);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -89,8 +98,8 @@ export default function Home() {
     if (!lightboxOpen) return;
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightbox(null);
-      if (e.key === "ArrowRight") setLightbox(i => i === null ? 0 : (i + 1) % gallery.length);
-      if (e.key === "ArrowLeft") setLightbox(i => i === null ? 0 : (i - 1 + gallery.length) % gallery.length);
+      if (e.key === "ArrowRight") navigateLightbox(1);
+      if (e.key === "ArrowLeft") navigateLightbox(-1);
       if (e.key === "Tab") {
         const focusable = lightboxRef.current?.querySelectorAll<HTMLButtonElement>("button");
         if (!focusable?.length) return;
@@ -104,7 +113,7 @@ export default function Home() {
     closeButtonRef.current?.focus();
     window.addEventListener("keydown", key);
     return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", key); lightboxTriggerRef.current?.focus(); };
-  }, [lightboxOpen]);
+  }, [lightboxOpen, navigateLightbox]);
 
   useEffect(() => {
     const main = mainRef.current;
@@ -117,13 +126,22 @@ export default function Home() {
     return () => window.removeEventListener("pointermove", followPointer);
   }, []);
 
+  useEffect(() => {
+    if (!menu) return;
+    const closeMenu = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenu(false);
+    };
+    window.addEventListener("keydown", closeMenu);
+    return () => window.removeEventListener("keydown", closeMenu);
+  }, [menu]);
+
   return <main ref={mainRef}>
     <div className="scroll-progress" style={{ transform: `scaleX(${scrollProgress / 100})` }} aria-hidden="true"/>
     <nav className="nav" aria-label="เมนูหลัก">
       <a className="brand" href="#top"><img src="/portfolio/image1.png" alt="ตราคนดีศรีเชียงใหม่" width={42} height={42}/><span>สายรุ้ง</span></a>
-      <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="เปิดเมนู">{menu ? "×" : "☰"}</button>
-      <div className={`nav-links ${menu ? "open" : ""}`} onClick={() => setMenu(false)}>
-        <a className={activeSection === "story" ? "active" : ""} href="#story">เรื่องราว</a><a className={activeSection === "awards" ? "active" : ""} href="#awards">รางวัล</a><a className={activeSection === "virtues" ? "active" : ""} href="#virtues">คุณธรรม</a><a className={activeSection === "gallery" ? "active" : ""} href="#gallery">ภาพกิจกรรม</a>
+      <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-controls="primary-navigation" aria-label={menu ? "ปิดเมนู" : "เปิดเมนู"}>{menu ? "×" : "☰"}</button>
+      <div className={`nav-links ${menu ? "open" : ""}`} id="primary-navigation" onClick={() => setMenu(false)}>
+        <a className={activeSection === "story" ? "active" : ""} aria-current={activeSection === "story" ? "page" : undefined} href="#story">เรื่องราว</a><a className={activeSection === "awards" ? "active" : ""} aria-current={activeSection === "awards" ? "page" : undefined} href="#awards">รางวัล</a><a className={activeSection === "virtues" ? "active" : ""} aria-current={activeSection === "virtues" ? "page" : undefined} href="#virtues">คุณธรรม</a><a className={activeSection === "gallery" ? "active" : ""} aria-current={activeSection === "gallery" ? "page" : undefined} href="#gallery">ภาพกิจกรรม</a>
       </div>
     </nav>
 
@@ -197,7 +215,7 @@ export default function Home() {
 
     <footer><img src="/portfolio/image1.png" alt="" width={70} height={70}/><p>“ความดี เริ่มจากการลงมือทำในทุกวัน”</p><small>แฟ้มสะสมผลงาน เด็กหญิงรุ้งกานฎา จีนา · เชียงใหม่ ๒๕๖๙</small></footer>
 
-    {lightbox !== null && <div className="lightbox" ref={lightboxRef} role="dialog" aria-modal="true" aria-label="ภาพขนาดใหญ่" onClick={() => setLightbox(null)}><button className="close" ref={closeButtonRef} onClick={() => setLightbox(null)} aria-label="ปิด">×</button><button className="prev" onClick={e => {e.stopPropagation();setLightbox((lightbox-1+gallery.length)%gallery.length)}} aria-label="ภาพก่อนหน้า">‹</button><div className="lightbox-image" onClick={e => e.stopPropagation()}><img src={`/portfolio/${gallery[lightbox].src}`} alt={gallery[lightbox].alt}/></div><button className="next" onClick={e => {e.stopPropagation();setLightbox((lightbox+1)%gallery.length)}} aria-label="ภาพถัดไป">›</button><p>{lightbox+1} / {gallery.length}</p></div>}
+    {lightbox !== null && <div className="lightbox" ref={lightboxRef} role="dialog" aria-modal="true" aria-label="ภาพขนาดใหญ่" onClick={() => setLightbox(null)}><button className="close" ref={closeButtonRef} onClick={() => setLightbox(null)} aria-label="ปิด">×</button><button className="prev" onClick={e => {e.stopPropagation();navigateLightbox(-1)}} aria-label="ภาพก่อนหน้า">‹</button><div className="lightbox-image" onClick={e => e.stopPropagation()}><img src={`/portfolio/${gallery[lightbox].src}`} alt={gallery[lightbox].alt}/></div><button className="next" onClick={e => {e.stopPropagation();navigateLightbox(1)}} aria-label="ภาพถัดไป">›</button><p>{Math.max(filteredGalleryIndexes.indexOf(lightbox), 0)+1} / {filteredGalleryIndexes.length}</p></div>}
     <button className={`to-top ${showTop ? "show" : ""}`} onClick={() => window.scrollTo({top:0,behavior:"smooth"})} aria-label="กลับด้านบน">↑</button>
   </main>;
 }
