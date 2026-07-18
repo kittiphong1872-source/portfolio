@@ -45,3 +45,5 @@ portfolio-contact.jpg
 public/portfolio/*.emf
 dev-server.log
 dev-server.err.log
+netlify-preview.log
+netlify-preview.err.log
