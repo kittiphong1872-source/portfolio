@@ -43,3 +43,5 @@ next-env.d.ts
 /work/
 portfolio-contact.jpg
 public/portfolio/*.emf
+dev-server.log
+dev-server.err.log
