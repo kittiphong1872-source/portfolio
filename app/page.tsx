@@ -39,24 +39,48 @@ const gallery = [
   [53, "ทัศนศึกษานอกสถานที่"], [54, "รำไทยในงานโรงเรียน"],
   [55, "กิจกรรมการแสดงร่วมกับนักเรียน"], [56, "การแสดงนาฏศิลป์ไทย"],
   [62, "การแสดงในเทศกาลพิพิธภัณฑ์ยามค่ำคืน"], [63, "ร่วมกิจกรรมวันสำคัญของโรงเรียน"],
-].map(([number, alt]) => ({ src: `image${number}.jpeg`, alt }));
+].map(([number, alt], index) => ({
+  src: `image${number}.jpeg`,
+  alt,
+  category: index < 6 ? "community" : index < 10 ? "family" : index < 16 ? "culture" : index < 24 ? "music" : "activity",
+}));
+
+const galleryFilters = [
+  ["all", "ทั้งหมด"], ["culture", "วัฒนธรรม"], ["music", "ดนตรีและการแสดง"],
+  ["community", "จิตอาสา"], ["family", "ครอบครัว"], ["activity", "กิจกรรม"],
+];
 
 export default function Home() {
   const [virtue, setVirtue] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState("top");
+  const [galleryFilter, setGalleryFilter] = useState("all");
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxTriggerRef = useRef<HTMLButtonElement>(null);
   const current = useMemo(() => virtues[virtue], [virtue]);
+  const filteredGallery = useMemo(() => galleryFilter === "all" ? gallery : gallery.filter(image => image.category === galleryFilter), [galleryFilter]);
   const lightboxOpen = lightbox !== null;
 
   useEffect(() => {
     const reveal = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && e.target.classList.add("is-visible")), { threshold: .12 });
     document.querySelectorAll(".reveal").forEach(el => reveal.observe(el));
-    const onScroll = () => setShowTop(window.scrollY > 650);
+    const onScroll = () => {
+      setShowTop(window.scrollY > 650);
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0);
+      const sections = ["top", "story", "awards", "virtues", "gallery"];
+      const currentSection = [...sections].reverse().find(id => {
+        const element = document.getElementById(id);
+        return element ? window.scrollY + window.innerHeight * .32 >= element.offsetTop : false;
+      });
+      if (currentSection) setActiveSection(currentSection);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => { reveal.disconnect(); window.removeEventListener("scroll", onScroll); };
   }, []);
 
@@ -82,11 +106,12 @@ export default function Home() {
   }, [lightboxOpen]);
 
   return <main>
+    <div className="scroll-progress" style={{ transform: `scaleX(${scrollProgress / 100})` }} aria-hidden="true"/>
     <nav className="nav" aria-label="เมนูหลัก">
       <a className="brand" href="#top"><img src="/portfolio/image1.png" alt="ตราคนดีศรีเชียงใหม่" width={42} height={42}/><span>สายรุ้ง</span></a>
       <button className="menu-button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="เปิดเมนู">{menu ? "×" : "☰"}</button>
       <div className={`nav-links ${menu ? "open" : ""}`} onClick={() => setMenu(false)}>
-        <a href="#story">เรื่องราว</a><a href="#awards">รางวัล</a><a href="#virtues">คุณธรรม</a><a href="#gallery">ภาพกิจกรรม</a>
+        <a className={activeSection === "story" ? "active" : ""} href="#story">เรื่องราว</a><a className={activeSection === "awards" ? "active" : ""} href="#awards">รางวัล</a><a className={activeSection === "virtues" ? "active" : ""} href="#virtues">คุณธรรม</a><a className={activeSection === "gallery" ? "active" : ""} href="#gallery">ภาพกิจกรรม</a>
       </div>
     </nav>
 
@@ -99,10 +124,14 @@ export default function Home() {
       </div>
       <div className="hero-visual reveal">
         <div className="portrait-frame"><img src="/portfolio/image2.jpeg" alt="เด็กหญิงรุ้งกานฎา จีนา"/></div>
+        <div className="skill-chip chip-music">ดนตรีพื้นเมือง</div>
+        <div className="skill-chip chip-dance">รำไทย</div>
+        <div className="skill-chip chip-volunteer">จิตอาสา</div>
         <div className="orbit-note"><b>๙</b><span>คุณธรรม<br/>นำทางชีวิต</span></div>
         <p className="vertical-word">CHIANG MAI · GOOD YOUTH</p>
       </div>
       <div className="hero-marquee"><span>มุ่งมั่น · ตั้งมั่น · ทำให้สำเร็จ · มุ่งมั่น · ตั้งมั่น · ทำให้สำเร็จ · </span></div>
+      <a className="scroll-cue" href="#story" aria-label="เลื่อนลงดูเรื่องราว"><span></span><small>เลื่อนเพื่อชมเรื่องราว</small></a>
     </header>
 
     <section className="story section" id="story">
@@ -131,7 +160,8 @@ export default function Home() {
     <section className="gallery section" id="gallery">
       <div className="section-label reveal"><span>๐๔</span><p>ภาพกิจกรรม</p></div>
       <div className="section-head reveal"><h2>ความทรงจำ<br/><i>ระหว่างทาง</i></h2><p>เรื่องเล่าจากห้องเรียน เวทีการแสดง งานวัฒนธรรม ครอบครัว และกิจกรรมเพื่อสังคม</p></div>
-      <div className="masonry reveal">{gallery.map((image,i) => <button key={image.src} className={`tile tile-${i%5}`} onClick={event => { lightboxTriggerRef.current = event.currentTarget; setLightbox(i); }} aria-label={`เปิด ${image.alt}`}><img src={`/portfolio/${image.src}`} alt={image.alt}/></button>)}</div>
+      <div className="gallery-filters reveal" role="group" aria-label="กรองภาพกิจกรรม">{galleryFilters.map(([value,label]) => <button key={value} className={galleryFilter === value ? "active" : ""} aria-pressed={galleryFilter === value} onClick={() => setGalleryFilter(value)}>{label}</button>)}</div>
+      <div className="masonry reveal" key={galleryFilter}>{filteredGallery.map((image,i) => <button key={image.src} className={`tile tile-${i%5}`} onClick={event => { lightboxTriggerRef.current = event.currentTarget; setLightbox(gallery.indexOf(image)); }} aria-label={`เปิด ${image.alt}`}><img src={`/portfolio/${image.src}`} alt={image.alt}/><span>{image.alt}</span></button>)}</div>
     </section>
 
     <footer><img src="/portfolio/image1.png" alt="" width={70} height={70}/><p>“ความดี เริ่มจากการลงมือทำในทุกวัน”</p><small>แฟ้มสะสมผลงาน เด็กหญิงรุ้งกานฎา จีนา · เชียงใหม่ ๒๕๖๙</small></footer>
