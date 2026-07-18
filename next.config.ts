@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    // Vinext's development image optimizer cannot serve local portfolio assets.
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
