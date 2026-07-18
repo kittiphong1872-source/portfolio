@@ -47,6 +47,6 @@ test("publishes structured metadata and accessible navigation", async () => {
 test("ships evidence and social preview assets", async () => {
   const pdf = await stat(new URL("../public/portfolio-rungkanda-jeena.pdf", import.meta.url));
   const og = await stat(new URL("../public/og.jpg", import.meta.url));
-  assert.ok(pdf.isFile() && pdf.size > 1_000_000);
+  assert.ok(pdf.isFile() && pdf.size > 100_000);
   assert.ok(og.isFile() && og.size > 50_000);
 });

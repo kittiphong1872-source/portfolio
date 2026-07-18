@@ -295,7 +295,7 @@ export default function Home() {
     <section className="evidence section" id="evidence" aria-labelledby="evidence-title">
       <div className="evidence-copy reveal"><p className="feature-kicker">EVIDENCE · TRANSPARENCY</p><h2 id="evidence-title">หลักฐานที่<br/><i>ตรวจสอบได้</i></h2><p>ข้อมูลในเว็บไซต์เรียบเรียงจากแฟ้มประวัติผลงานฉบับเสนอพิจารณา และเชื่อมโยงแหล่งสาธารณะเฉพาะรายการที่ตรวจสอบออนไลน์ได้ โดยไม่นำข้อมูลส่วนตัวที่ไม่จำเป็นมาเผยแพร่</p></div>
       <div className="evidence-grid reveal">
-        <a className="evidence-card primary-evidence" href="/portfolio-rungkanda-jeena.pdf" download><span>PDF · ๕.๕ MB</span><h3>แฟ้มสะสมผลงานฉบับเต็ม</h3><p>เอกสารต้นฉบับพร้อมประกาศนียบัตร ภาพกิจกรรม และรายละเอียดคุณธรรม ๙ ประการ</p><b>ดาวน์โหลดเอกสาร ↓</b></a>
+        <a className="evidence-card primary-evidence" href="/portfolio-rungkanda-jeena.pdf" download><span>PDF · PUBLIC EDITION</span><h3>แฟ้มผลงานฉบับเผยแพร่</h3><p>เอกสารสรุป ๓ หน้า พร้อมผลงานเด่น เกียรติประวัติ และ Timeline โดยตัดข้อมูลส่วนตัวของเยาวชนออกแล้ว</p><b>ดาวน์โหลดเอกสาร ↓</b></a>
         <a className="evidence-card" href="https://compet67.vichakan.net/north/modules/report/compet_list_conclusion_report.php?compid=73&op=all" target="_blank" rel="noopener noreferrer"><span>PUBLIC SOURCE · ๒๕๖๘</span><h3>รายการประกวดมารยาทไทย</h3><p>แหล่งสาธารณะยืนยันชื่อ โรงเรียน กิจกรรม วันจัดงาน และสถานที่แข่งขันระดับภาคเหนือ</p><b>เปิดแหล่งอ้างอิง ↗</b></a>
       </div>
       <p className="privacy-note reveal">เพื่อคุ้มครองเยาวชน เว็บไซต์ไม่แสดงที่อยู่ หมายเลขโทรศัพท์ บัญชีส่วนตัว หรือข้อมูลการสอบ</p>
