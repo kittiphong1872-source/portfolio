@@ -61,6 +61,7 @@ export default function Home() {
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxTriggerRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const current = useMemo(() => virtues[virtue], [virtue]);
   const filteredGallery = useMemo(() => galleryFilter === "all" ? gallery : gallery.filter(image => image.category === galleryFilter), [galleryFilter]);
   const lightboxOpen = lightbox !== null;
@@ -105,7 +106,18 @@ export default function Home() {
     return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", key); lightboxTriggerRef.current?.focus(); };
   }, [lightboxOpen]);
 
-  return <main>
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main || window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const followPointer = (event: PointerEvent) => {
+      main.style.setProperty("--pointer-x", `${event.clientX}px`);
+      main.style.setProperty("--pointer-y", `${event.clientY}px`);
+    };
+    window.addEventListener("pointermove", followPointer, { passive: true });
+    return () => window.removeEventListener("pointermove", followPointer);
+  }, []);
+
+  return <main ref={mainRef}>
     <div className="scroll-progress" style={{ transform: `scaleX(${scrollProgress / 100})` }} aria-hidden="true"/>
     <nav className="nav" aria-label="เมนูหลัก">
       <a className="brand" href="#top"><img src="/portfolio/image1.png" alt="ตราคนดีศรีเชียงใหม่" width={42} height={42}/><span>สายรุ้ง</span></a>
@@ -155,6 +167,25 @@ export default function Home() {
         <div className="virtue-list">{virtues.map((v,i) => <button key={v[1]} className={i===virtue ? "active" : ""} onClick={() => setVirtue(i)}><span>{v[0]}</span>{v[1]}</button>)}</div>
         <article className="virtue-detail" key={current[0]}><div className="virtue-photo"><img src={`/portfolio/${current[3]}`} alt={current[1]}/></div><span>{current[0]} / ๐๙</span><h3>{current[1]}</h3><p>{current[2]}</p></article>
       </div>
+    </section>
+
+    <section className="feature-story" id="feature" aria-labelledby="feature-title">
+      <div className="feature-backdrop" aria-hidden="true"><img src="/portfolio/image48.jpeg" alt=""/></div>
+      <div className="feature-content reveal">
+        <p className="feature-kicker">CULTURE IN MOTION · CHIANG MAI</p>
+        <h2 id="feature-title">วัฒนธรรม<br/><i>ที่ยังมีชีวิต</i></h2>
+        <blockquote>“เมื่อเยาวชนลงมือสืบสาน ศิลปะล้านนาจึงไม่ได้อยู่เพียงในความทรงจำ แต่ยังเติบโตไปพร้อมคนรุ่นใหม่”</blockquote>
+        <div className="feature-meta">
+          <div><strong>๐๑</strong><span>เรียนรู้<br/>จากรากเหง้า</span></div>
+          <div><strong>๐๒</strong><span>ถ่ายทอด<br/>ผ่านการแสดง</span></div>
+          <div><strong>๐๓</strong><span>ส่งต่อ<br/>ด้วยหัวใจอาสา</span></div>
+        </div>
+      </div>
+      <figure className="feature-inset reveal">
+        <img src="/portfolio/image42.jpeg" alt="การแสดงศิลปวัฒนธรรมล้านนา"/>
+        <figcaption><span>FIELD NOTE / 04</span> ทุกเวทีคือพื้นที่เรียนรู้</figcaption>
+      </figure>
+      <div className="feature-index" aria-hidden="true">04 — 05</div>
     </section>
 
     <section className="gallery section" id="gallery">
